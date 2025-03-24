@@ -4,6 +4,7 @@ import LoginForm from "./Components/Auth/LoginForm";
 import RegistrationForm from "./Components/Auth/RegistrationForm";
 import User from "./Components/Pages/User";
 import Admin from "./Components/Pages/Admin";
+import { SuperAdminUser } from "./Components/Pages/SuperAdminUser";
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <Route path="/register" element={<RegistrationForm />} />
         <Route path="/user" element={<User />} />
         <Route path="/manager" element={<Admin />} />
+        <Route path="/superAdmin" element={<SuperAdminUser />} />
       </Routes>
     </Router>
   );
