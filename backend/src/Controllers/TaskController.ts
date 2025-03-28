@@ -33,7 +33,7 @@ export const createTask = async (req: Request, res: Response): Promise<void> => 
 // Get all tasks
 export const getTasks = async (req: Request, res: Response): Promise<void> => {
   try {
-    const tasks = await Task.find(); // Fetch all tasks
+    const tasks = await Task.find().populate("assignedTo", "name email");; // Fetch all tasks
     res.status(200).json(tasks);
   } catch (error) {
     console.error(error);

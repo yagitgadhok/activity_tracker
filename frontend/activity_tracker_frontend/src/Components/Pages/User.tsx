@@ -7,7 +7,7 @@ interface Task {
   _id: string;
   title: string;
   estimatedTime: string;
-  assignedTo: string;
+  assignedTo: any;
   priority: "High" | "Medium" | "Low";
   status: "To-Do" | "In Progress" | "Completed";
 }
@@ -35,7 +35,9 @@ const UserDashboard: React.FC = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/users");
+      const response = await axios.get(
+        "http://localhost:5000/api/v1/auth/getAllUsers"
+      );
       setUsers(response.data.users);
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -76,7 +78,7 @@ const UserDashboard: React.FC = () => {
     setTaskData({
       title: task.title,
       estimatedTime: task.estimatedTime,
-      assignedTo: task.assignedTo,
+      assignedTo: task.assignedTo.id,
       priority: task.priority,
       status: task.status,
     });
@@ -98,19 +100,16 @@ const UserDashboard: React.FC = () => {
         return;
       }
 
-      let response: any;
       if (editMode && editTaskId) {
+        let response: any;
         // Update existing task
         response = await axios.put(`${API_URL}/${editTaskId}`, taskData);
-        setTasks((prevTasks) =>
-          prevTasks.map((task) =>
-            task._id === editTaskId ? { ...task, ...response.data } : task
-          )
-        );
+        fetchTasks();
       } else {
+        let response: any;
         // Create new task
         response = await axios.post(API_URL, taskData);
-        setTasks((prevTasks) => [...prevTasks, response.data]);
+        fetchTasks();
       }
 
       setModalIsOpen(false);
@@ -169,7 +168,7 @@ const UserDashboard: React.FC = () => {
             <tr key={task._id} className="border">
               <td className="border p-2">{task.title}</td>
               <td className="border p-2">{task.estimatedTime}</td>
-              <td className="border p-2">{task.assignedTo}</td>
+              <td className="border p-2">{task.assignedTo?.name}</td>
               <td className="border p-2">{task.priority}</td>
               <td className="border p-2">{task.status}</td>
               <td className="border p-2 flex space-x-2">
