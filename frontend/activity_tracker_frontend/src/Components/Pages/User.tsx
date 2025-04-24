@@ -149,177 +149,199 @@ const UserDashboard: React.FC = () => {
 
   return (
     <>
-      <nav className="bg-blue-600 text-white px-6 py-4 flex justify-between items-center shadow-md">
-        <h2 className="text-xl font-semibold">Task Manager</h2>
+      <nav className="bg-gradient-to-r from-teal-500 to-cyan-600 text-white px-6 py-4 flex justify-between items-center shadow-lg">
+        <h2 className="text-3xl font-bold tracking-wide">Task Manager</h2>
         <button
           onClick={() => {
-            localStorage.removeItem("token"); // or your auth key
-            navigate("/"); // navigate to login
+            localStorage.removeItem("token");
+            navigate("/");
           }}
-          className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded transition"
+          className="bg-gradient-to-r from-gray-700 to-gray-800 text-white px-4 py-2 rounded-lg shadow-md hover:from-gray-600 hover:to-gray-700 transition font-medium"
         >
           Logout
         </button>
       </nav>
-      <div className="max-w-4xl mx-auto mt-10 p-6 bg-white shadow-lg rounded-lg relative">
-        <h1 className="text-3xl font-bold text-center mb-6">
-          User Dashboard - Task Table
-        </h1>
+      <div
+        className="min-h-screen bg-gradient-to-br from-gray-800 via-gray-900 to-black py-12"
+      >
+        <div className="max-w-7xl mx-auto p-10 bg-gray-800 shadow-2xl rounded-xl">
+          <h1 className="text-5xl font-extrabold text-center mb-10 text-white">
+            User Dashboard
+          </h1>
 
-        {/* Add Task Button */}
-        <button
-          onClick={openModal}
-          className="absolute top-6 right-6 bg-blue-600 text-white px-4 py-2 rounded shadow-md hover:bg-blue-700 transition"
-        >
-          + Add Task
-        </button>
-
-        {/* Task Table */}
-        <table className="w-full border-collapse border border-gray-300 mt-10">
-          <thead>
-            <tr className="bg-blue-600 text-white">
-              <th className="border p-2">Task Name</th>
-              <th className="border p-2">Estimated Time</th>
-              <th className="border p-2">Assigned To</th>
-              <th className="border p-2">Priority</th>
-              <th className="border p-2">Status</th>
-              <th className="border p-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tasks.map((task) => (
-              <tr key={task._id} className="border">
-                <td className="border p-2">{task.title}</td>
-                <td className="border p-2">{task.estimatedTime}</td>
-                <td className="border p-2">{task.assignedTo?.name}</td>
-                <td className="border p-2">{task.priority}</td>
-                <td className="border p-2">{task.status}</td>
-                <td className="border p-2 flex space-x-2">
-                  <button
-                    onClick={() => openEditModal(task)}
-                    className="px-3 py-1 bg-yellow-500 text-white rounded"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => confirmDelete(task._id)}
-                    className="px-3 py-1 bg-red-500 text-white rounded"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {/* Modal */}
-        <Modal
-          isOpen={modalIsOpen}
-          onRequestClose={() => setModalIsOpen(false)}
-          className="bg-white p-6 rounded-lg shadow-lg w-96 mx-auto mt-20"
-          overlayClassName="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center"
-        >
-          <h2 className="text-2xl font-semibold mb-4">
-            {editMode ? "Edit Task" : "Add New Task"}
-          </h2>
-          <div className="space-y-3">
-            <input
-              type="text"
-              name="title"
-              placeholder="Task Name"
-              value={taskData.title}
-              onChange={handleChange}
-              className="w-full border p-2 rounded"
-            />
-            <input
-              type="text"
-              name="estimatedTime"
-              placeholder="Estimated Time"
-              value={taskData.estimatedTime}
-              onChange={handleChange}
-              className="w-full border p-2 rounded"
-            />
-            <select
-              name="assignedTo"
-              value={taskData.assignedTo}
-              onChange={handleChange}
-              className="w-full border p-2 rounded"
-            >
-              <option value="">Select User</option>
-              {users.map((user) => (
-                <option key={user._id} value={user._id}>
-                  {user.name}
-                </option>
-              ))}
-            </select>
-            <select
-              name="priority"
-              value={taskData.priority}
-              onChange={handleChange}
-              className="w-full border p-2 rounded"
-            >
-              <option>High</option>
-              <option>Medium</option>
-              <option>Low</option>
-            </select>
-            <select
-              name="status"
-              value={taskData.status}
-              onChange={handleChange}
-              className="w-full border p-2 rounded"
-            >
-              <option>To-Do</option>
-              <option>In Progress</option>
-              <option>Completed</option>
-            </select>
-          </div>
-          <div className="flex justify-end space-x-2 mt-4">
+          {/* Add Task Button */}
+          <div className="flex justify-end mb-6">
             <button
-              onClick={() => setModalIsOpen(false)}
-              className="px-4 py-2 bg-gray-400 text-white rounded"
+              onClick={openModal}
+              className="bg-gradient-to-r from-teal-500 to-teal-600 text-white px-6 py-3 rounded-lg shadow-lg hover:from-teal-600 hover:to-teal-700 transition font-semibold"
             >
-              Cancel
-            </button>
-            <button
-              onClick={handleSubmit}
-              className="px-4 py-2 bg-green-500 text-white rounded"
-            >
-              {editMode ? "Update" : "Add"}
+              + Add Task
             </button>
           </div>
-        </Modal>
 
-        {/* Confirm Delete Modal */}
-        <Modal
-          isOpen={confirmDeleteModal}
-          onRequestClose={() => setConfirmDeleteModal(false)}
-          className="bg-white p-6 rounded-lg shadow-lg w-96 mx-auto mt-20"
-          overlayClassName="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center"
-        >
-          <h2 className="text-xl font-semibold mb-4">Delete Task</h2>
-          <p className="mb-4">Are you sure you want to delete this task?</p>
-          <div className="flex justify-end space-x-2">
-            <button
-              onClick={() => setConfirmDeleteModal(false)}
-              className="px-4 py-2 bg-gray-400 text-white rounded"
-            >
-              No
-            </button>
-            <button
-              onClick={async () => {
-                if (taskToDeleteId) {
-                  await deleteTask(taskToDeleteId);
-                  setConfirmDeleteModal(false);
-                  setTaskToDeleteId(null);
-                }
-              }}
-              className="px-4 py-2 bg-red-500 text-white rounded"
-            >
-              Yes
-            </button>
+          {/* Task Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse border border-gray-700 bg-gray-900 rounded-lg shadow-md">
+              <thead>
+                <tr className="bg-gradient-to-r from-teal-600 to-cyan-700 text-white">
+                  <th className="border border-gray-700 p-4 text-left text-lg font-semibold">
+                    Task Name
+                  </th>
+                  <th className="border border-gray-700 p-4 text-left text-lg font-semibold">
+                    Estimated Time
+                  </th>
+                  <th className="border border-gray-700 p-4 text-left text-lg font-semibold">
+                    Assigned To
+                  </th>
+                  <th className="border border-gray-700 p-4 text-left text-lg font-semibold">
+                    Priority
+                  </th>
+                  <th className="border border-gray-700 p-4 text-left text-lg font-semibold">
+                    Status
+                  </th>
+                  <th className="border border-gray-700 p-4 text-left text-lg font-semibold">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {tasks.map((task) => (
+                  <tr key={task._id} className="border border-gray-700 hover:bg-gray-800">
+                    <td className="border border-gray-700 p-4 text-gray-300">{task.title}</td>
+                    <td className="border border-gray-700 p-4 text-gray-300">{task.estimatedTime}</td>
+                    <td className="border border-gray-700 p-4 text-gray-300">{task.assignedTo?.name}</td>
+                    <td className="border border-gray-700 p-4 text-gray-300">{task.priority}</td>
+                    <td className="border border-gray-700 p-4 text-gray-300">{task.status}</td>
+                    <td className="border border-gray-700 p-4 flex space-x-3">
+                      <button
+                        onClick={() => openEditModal(task)}
+                        className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow-md hover:from-blue-600 hover:to-blue-700 transition font-medium"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => confirmDelete(task._id)}
+                        className="px-4 py-2 bg-gradient-to-r from-gray-700 to-gray-800 text-white rounded-lg shadow-md hover:from-gray-600 hover:to-gray-700 transition font-medium"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        </Modal>
+
+          {/* Modal */}
+          <Modal
+            isOpen={modalIsOpen}
+            onRequestClose={() => setModalIsOpen(false)}
+            className="bg-gray-800 p-10 rounded-2xl shadow-2xl w-[28rem] mx-auto mt-20"
+            overlayClassName="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center"
+          >
+            <h2 className="text-4xl font-bold mb-6 text-white text-center">
+              {editMode ? "Edit Task" : "Add New Task"}
+            </h2>
+            <div className="space-y-6">
+              <input
+                type="text"
+                name="title"
+                placeholder="Task Name"
+                value={taskData.title}
+                onChange={handleChange}
+                className="w-full border border-gray-600 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-lg bg-gray-700 text-white"
+              />
+              <input
+                type="text"
+                name="estimatedTime"
+                placeholder="Estimated Time"
+                value={taskData.estimatedTime}
+                onChange={handleChange}
+                className="w-full border border-gray-600 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-lg bg-gray-700 text-white"
+              />
+              <select
+                name="assignedTo"
+                value={taskData.assignedTo}
+                onChange={handleChange}
+                className="w-full border border-gray-600 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-lg bg-gray-700 text-white"
+              >
+                <option value="">Select User</option>
+                {users.map((user) => (
+                  <option key={user._id} value={user._id}>
+                    {user.name}
+                  </option>
+                ))}
+              </select>
+              <select
+                name="priority"
+                value={taskData.priority}
+                onChange={handleChange}
+                className="w-full border border-gray-600 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-lg bg-gray-700 text-white"
+              >
+                <option>High</option>
+                <option>Medium</option>
+                <option>Low</option>
+              </select>
+              <select
+                name="status"
+                value={taskData.status}
+                onChange={handleChange}
+                className="w-full border border-gray-600 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-lg bg-gray-700 text-white"
+              >
+                <option>To-Do</option>
+                <option>In Progress</option>
+                <option>Completed</option>
+              </select>
+            </div>
+            <div className="flex justify-end space-x-4 mt-8">
+              <button
+                onClick={() => setModalIsOpen(false)}
+                className="px-6 py-3 bg-gray-600 text-white rounded-lg shadow-md hover:bg-gray-700 transition font-medium text-lg"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmit}
+                className="px-6 py-3 bg-teal-500 text-white rounded-lg shadow-md hover:bg-teal-600 transition font-medium text-lg"
+              >
+                {editMode ? "Update" : "Add"}
+              </button>
+            </div>
+          </Modal>
+
+          {/* Confirm Delete Modal */}
+          <Modal
+            isOpen={confirmDeleteModal}
+            onRequestClose={() => setConfirmDeleteModal(false)}
+            className="bg-gray-800 p-8 rounded-lg shadow-xl w-96 mx-auto mt-20"
+            overlayClassName="fixed inset-0 bg-black bg-opacity-75 flex justify-center items-center"
+          >
+            <h2 className="text-2xl font-bold mb-4 text-white">Delete Task</h2>
+            <p className="mb-6 text-gray-400">
+              Are you sure you want to delete this task?
+            </p>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setConfirmDeleteModal(false)}
+                className="px-6 py-2 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-lg shadow-md hover:from-gray-700 hover:to-gray-800 transition font-medium"
+              >
+                No
+              </button>
+              <button
+                onClick={async () => {
+                  if (taskToDeleteId) {
+                    await deleteTask(taskToDeleteId);
+                    setConfirmDeleteModal(false);
+                    setTaskToDeleteId(null);
+                  }
+                }}
+                className="px-6 py-2 bg-gradient-to-r from-teal-500 to-teal-600 text-white rounded-lg shadow-md hover:from-teal-600 hover:to-teal-700 transition font-medium"
+              >
+                Yes
+              </button>
+            </div>
+          </Modal>
+        </div>
       </div>
     </>
   );
