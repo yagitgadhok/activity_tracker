@@ -33,6 +33,8 @@ const LoginForm: React.FC = () => {
       } else {
         navigate("/superAdmin");
       }
+
+      localStorage.setItem("userId", response.data.user.id);
     } catch (err: any) {
       setError(err.response?.data?.message || "Login failed");
     }
