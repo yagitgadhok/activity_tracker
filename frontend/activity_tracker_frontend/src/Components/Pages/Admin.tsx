@@ -1,7 +1,29 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Admin = () => {
   const navigate = useNavigate();
+
+  const [tasks, setTasks] = useState([]);
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await fetch("http://localhost:5000/api/v1/tasks", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await response.json();
+        setTasks(data);
+      } catch (error) {
+        console.error("Error fetching tasks:", error);
+      }
+    };
+
+    fetchTasks();
+  }, []);
 
   return (
     <>
@@ -23,24 +45,50 @@ const Admin = () => {
 
       {/* Page Content */}
       <div className="min-h-screen bg-gradient-to-b from-[#0f2027] via-[#203a43] to-[#2c5364] text-white py-10 px-6 flex justify-center items-start">
-        <div className="w-full max-w-3xl">
+        <div className="w-full max-w-5xl">
           <h1 className="text-3xl md:text-4xl font-bold text-center mb-10">
             Admin Dashboard
           </h1>
 
-          {/* Centered and Larger User Management Card */}
-          <div className="bg-[#1e293b] p-8 rounded-2xl shadow-lg hover:shadow-2xl transition duration-300">
-            <h2 className="text-4xl font-semibold mb-4 text-teal-300 text-center">
-              User Management
+          {/* Task Overview Table */}
+          <div className="bg-[#1e293b] p-6 rounded-2xl shadow-lg overflow-x-auto">
+            <h2 className="text-3xl font-semibold text-teal-300 mb-6 text-center">
+              Task Overview
             </h2>
-            <p className="text-gray-300 text-center mb-6 text-xl">
-              View, edit, and manage users.
-            </p>
-            <div className="flex justify-center">
-              <button className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-semibold transition duration-300">
-                Manage Users
-              </button>
-            </div>
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-teal-600 text-white">
+                  <th className="py-3 px-4 border-b">User</th>
+                  <th className="py-3 px-4 border-b">Task Assigned</th>
+                  <th className="py-3 px-4 border-b">Priority</th>
+                  <th className="py-3 px-4 border-b">Status</th>
+                  <th className="py-3 px-4 border-b">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="text-gray-200">
+                {tasks.map((task) => (
+                  <tr key={task.id} className="hover:bg-slate-700">
+                    <td className="py-3 px-4 border-b">{task.user}</td>
+                    <td className="py-3 px-4 border-b">{task.title}</td>
+                    <td className="py-3 px-4 border-b">{task.priority}</td>
+                    <td className="py-3 px-4 border-b">{task.status}</td>
+                    <td
+                      onClick={() => navigate(`/admin/tasks/${task.id}`)}
+                      className="py-3 px-4 border-b text-blue-400 hover:underline cursor-pointer"
+                    >
+                      View
+                    </td>
+                  </tr>
+                ))}
+                {tasks.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="py-6 text-center text-gray-400">
+                      No tasks available.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
