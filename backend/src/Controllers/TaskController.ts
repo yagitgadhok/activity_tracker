@@ -57,6 +57,34 @@ export const getTasks = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
+// Get a single task by ID
+export const getTaskById = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    // Validate the task ID
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      res.status(400).json({ message: "Invalid task ID format" });
+      return;
+    }
+
+    const task = await Task.findById(id).populate("assignedTo", "name email");
+
+    if (!task) {
+      res.status(404).json({ message: "Task not found" });
+      return;
+    }
+
+    res.status(200).json(task);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 // Update a task
 export const updateTask = async (
   req: Request,
