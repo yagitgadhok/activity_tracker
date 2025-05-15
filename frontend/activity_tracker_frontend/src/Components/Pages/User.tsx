@@ -11,6 +11,7 @@ interface Task {
   assignedTo: any;
   priority: "High" | "Medium" | "Low";
   status: "To-Do" | "In Progress" | "Completed";
+  date?: string; // Add date field
 }
 
 const API_URL = "http://localhost:5000/api/v1/tasks";
@@ -25,6 +26,7 @@ const UserDashboard: React.FC = () => {
     assignedTo: "",
     priority: "Low",
     status: "To-Do",
+    date: "", // Add date field
   });
   const [editTaskId, setEditTaskId] = useState<string | null>(null);
 
@@ -79,6 +81,7 @@ const UserDashboard: React.FC = () => {
       assignedTo: "",
       priority: "Low",
       status: "To-Do",
+      date: "", // Add date field
     });
     setModalIsOpen(true);
   };
@@ -93,6 +96,7 @@ const UserDashboard: React.FC = () => {
       assignedTo: task.assignedTo._id,
       priority: task.priority,
       status: task.status,
+      date: task.date, // Add date field
     });
     setModalIsOpen(true);
   };
@@ -131,6 +135,7 @@ const UserDashboard: React.FC = () => {
         assignedTo: "",
         priority: "Low",
         status: "To-Do",
+        date: "", // Add date field
       });
     } catch (error) {
       console.error("Error saving task:", error);
@@ -145,6 +150,14 @@ const UserDashboard: React.FC = () => {
     } catch (error) {
       console.error("Error deleting task:", error);
     }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${month}/${day}/${year}`;
   };
 
   return (
@@ -200,6 +213,9 @@ const UserDashboard: React.FC = () => {
                     Status
                   </th>
                   <th className="border border-gray-700 p-4 text-left text-lg font-semibold">
+                    Date
+                  </th>
+                  <th className="border border-gray-700 p-4 text-left text-lg font-semibold">
                     Actions
                   </th>
                 </tr>
@@ -209,9 +225,12 @@ const UserDashboard: React.FC = () => {
                   <tr key={task._id} className="border border-gray-700 hover:bg-gray-800">
                     <td className="border border-gray-700 p-4 text-gray-300">{task.title}</td>
                     <td className="border border-gray-700 p-4 text-gray-300">{task.estimatedTime}</td>
-                    <td className="border border-gray-700 p-4 text-gray-300">{task.assignedTo?.name}</td>
+                    <td className="border border-gray-700 p-4 text-gray-300">
+                      {task.assignedTo?.name || "Unknown"}
+                    </td>
                     <td className="border border-gray-700 p-4 text-gray-300">{task.priority}</td>
                     <td className="border border-gray-700 p-4 text-gray-300">{task.status}</td>
+                    <td className="border border-gray-700 p-4 text-gray-300">{task.date ? formatDate(task.date) : "N/A"}</td>
                     <td className="border border-gray-700 p-4 flex space-x-3">
                       <button
                         onClick={() => openEditModal(task)}
@@ -256,6 +275,14 @@ const UserDashboard: React.FC = () => {
                 name="estimatedTime"
                 placeholder="Estimated Time"
                 value={taskData.estimatedTime}
+                onChange={handleChange}
+                className="w-full border border-gray-600 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-lg bg-gray-700 text-white"
+              />
+              <input
+                type="date"
+                name="date"
+                placeholder="Date"
+                value={taskData.date}
                 onChange={handleChange}
                 className="w-full border border-gray-600 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-lg bg-gray-700 text-white"
               />

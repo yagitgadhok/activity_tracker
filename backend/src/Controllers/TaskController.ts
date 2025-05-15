@@ -9,7 +9,7 @@ export const createTask = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { title, estimatedTime, assignedTo, priority, status } = req.body;
+    const { title, estimatedTime, assignedTo, priority, status, date } = req.body;
 
     // Validate assignedTo before creating the task
     if (!mongoose.Types.ObjectId.isValid(assignedTo)) {
@@ -23,6 +23,7 @@ export const createTask = async (
       assignedTo: new mongoose.Types.ObjectId(assignedTo),
       priority,
       status,
+      date, // Add date field
     });
 
     await newTask.save();
@@ -40,15 +41,15 @@ export const getTasks = async (req: Request, res: Response): Promise<void> => {
   try {
     const { assignedTo } = req.query;
     let filter = {};
-    // const tasks = await Task.find().populate("assignedTo", "name email"); // Fetch all tasks
-    // res.status(200).json(tasks);
     if (assignedTo && mongoose.Types.ObjectId.isValid(assignedTo as string)) {
       filter = {
         assignedTo: new mongoose.Types.ObjectId(assignedTo as string),
       };
     }
 
-    const tasks = await Task.find(filter).populate("assignedTo", "name email");
+    const tasks = await Task.find(filter)
+      .populate("assignedTo", "name email")
+      .select("title estimatedTime assignedTo priority status date"); // Include date in the response
     res.status(200).json(tasks);
   } catch (error) {
     console.error(error);
@@ -66,15 +67,6 @@ export const updateTask = async (
     const updatedTask = await Task.findByIdAndUpdate(id, req.body, {
       new: true,
     });
-
-    // if (!updatedTask) {
-    //   res.status(404).json({ message: "Task not found" });
-    //   return;
-    // }
-
-    // res
-    //   .status(200)
-    //   .json({ message: "Task updated successfully", task: updatedTask });
 
     if (!updatedTask) {
       res.status(404).json({ message: "Task not found" });
@@ -98,13 +90,6 @@ export const deleteTask = async (
   try {
     const { id } = req.params;
     const deletedTask = await Task.findByIdAndDelete(id);
-
-    // if (!deletedTask) {
-    //   res.status(404).json({ message: "Task not found" });
-    //   return;
-    // }
-
-    // res.status(200).json({ message: "Task deleted successfully" });
 
     if (!deletedTask) {
       res.status(404).json({ message: "Task not found" });

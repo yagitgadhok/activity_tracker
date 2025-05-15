@@ -6,6 +6,14 @@ const Admin = () => {
 
   const [tasks, setTasks] = useState([]);
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${month}/${day}/${year}`;
+  };
+
   useEffect(() => {
     const fetchTasks = async () => {
       try {
@@ -62,18 +70,20 @@ const Admin = () => {
                   <th className="py-3 px-4 border-b">Task Assigned</th>
                   <th className="py-3 px-4 border-b">Priority</th>
                   <th className="py-3 px-4 border-b">Status</th>
+                  <th className="py-3 px-4 border-b">Date</th>
                   <th className="py-3 px-4 border-b">Actions</th>
                 </tr>
               </thead>
               <tbody className="text-gray-200">
                 {tasks.map((task) => (
-                  <tr key={task.id} className="hover:bg-slate-700">
-                    <td className="py-3 px-4 border-b">{task.user}</td>
+                  <tr key={task._id} className="hover:bg-slate-700">
+                    <td className="py-3 px-4 border-b">{task.assignedTo?.name || "Unknown"}</td>
                     <td className="py-3 px-4 border-b">{task.title}</td>
                     <td className="py-3 px-4 border-b">{task.priority}</td>
                     <td className="py-3 px-4 border-b">{task.status}</td>
+                    <td className="py-3 px-4 border-b">{task.date ? formatDate(task.date) : "N/A"}</td>
                     <td
-                      onClick={() => navigate(`/admin/tasks/${task.id}`)}
+                      onClick={() => navigate(`/admin/tasks/${task._id}`)}
                       className="py-3 px-4 border-b text-blue-400 hover:underline cursor-pointer"
                     >
                       View
@@ -82,7 +92,7 @@ const Admin = () => {
                 ))}
                 {tasks.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="py-6 text-center text-gray-400">
+                    <td colSpan={6} className="py-6 text-center text-gray-400">
                       No tasks available.
                     </td>
                   </tr>
