@@ -6,6 +6,9 @@ const Admin = () => {
 
   const [tasks, setTasks] = useState([]);
   const [filterDate, setFilterDate] = useState("");
+  const [filterName, setFilterName] = useState("");
+  const [filterType, setFilterType] = useState("date"); // "date" or "name"
+  const [filterValue, setFilterValue] = useState("");
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -55,36 +58,58 @@ const Admin = () => {
       {/* Page Content */}
       <div className="min-h-screen bg-gradient-to-b from-[#0f2027] via-[#203a43] to-[#2c5364] text-white py-10 px-6 flex justify-center items-start">
         <div className="w-full max-w-5xl">
-          <h1 className="text-3xl md:text-4xl font-bold text-center mb-10">
+          <h1 className="text-5xl md:text-5xl font-bold text-center mb-10">
             Admin Dashboard
           </h1>
 
           {/* Task Overview Table */}
           <div className="bg-[#1e293b] p-6 rounded-2xl shadow-lg overflow-x-auto">
-            <h2 className="text-3xl font-semibold text-teal-300 mb-6 text-center">
+            <h2 className="text-4xl font-semibold text-teal-300 mb-6 text-center">
               Task Overview
             </h2>
 
             {/* Filter Section */}
-            <div className="mb-6 text-center">
-              <label className="mr-2 font-medium">Filter by Date:</label>
 
-              <div className="inline-flex items-center relative">
+            <div className="mb-6 text-center flex flex-col md:flex-row items-center justify-center gap-4">
+              <label className="font-semibold text-2xl">Filter by:</label>
+
+              <select
+                className="text-teal-500 font-semibold text-xl px-3 py-2 rounded-full border border-teal-500 bg-black focus:outline-none focus:ring-2 focus:ring-teal-500"
+                value={filterType}
+                onChange={(e) => {
+                  setFilterType(e.target.value);
+                  setFilterValue(""); // reset value when filter type changes
+                }}
+              >
+                <option value="date">Date</option>
+                <option value="name">Name</option>
+              </select>
+
+              {filterType === "date" ? (
                 <input
                   type="date"
-                  className="text-teal-500 font-semibold ps-7 py-2 pr-10 rounded-full border border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent appearance-none"
-                  value={filterDate}
-                  onChange={(e) => setFilterDate(e.target.value)}
+                  className="text-teal-500 text-xl font-semibold px-3 py-2 rounded-full border border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  value={filterValue}
+                  onChange={(e) => setFilterValue(e.target.value)}
                 />
-              </div>
-              <div className="inline-flex items-center relative">
-                <button
-                  onClick={() => setFilterDate("")}
-                  className="ml-2 bg-teal-500 text-white px-4 py-2 rounded-md hover:bg-teal-600 transition duration-300"
-                >
-                  Clear Filter
-                </button>
-              </div>
+              ) : (
+                <input
+                  type="text"
+                  placeholder="Enter user name"
+                  className="text-teal-500 text-xl font-semibold px-3 py-2 rounded-full border border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  value={filterValue}
+                  onChange={(e) => setFilterValue(e.target.value)}
+                />
+              )}
+              <button
+                onClick={() => {
+                  setFilterValue("");
+                  setFilterType("date");
+                }}
+                className="text-white bg-red-500 hover:bg-red-600 px-4 py-2 rounded-full transition duration-300"
+              >
+                Clear Filter
+              </button>
             </div>
 
             <table className="w-full text-left border-collapse">
@@ -101,12 +126,22 @@ const Admin = () => {
               <tbody className="text-gray-200">
                 {tasks
                   .filter((task) => {
-                    if (!filterDate) return true;
-                    if (!task.date) return false; // skip tasks with no date
-                    const taskDateObj = new Date(task.date);
-                    if (isNaN(taskDateObj.getTime())) return false; // skip invalid dates
-                    const taskDate = taskDateObj.toISOString().split("T")[0];
-                    return taskDate === filterDate;
+                    if (!filterValue) return true;
+
+                    if (filterType === "date") {
+                      if (!task.date) return false;
+                      const taskDateObj = new Date(task.date);
+                      if (isNaN(taskDateObj.getTime())) return false;
+                      const taskDate = taskDateObj.toISOString().split("T")[0];
+                      return taskDate === filterValue;
+                    }
+
+                    if (filterType === "name") {
+                      const name = task.assignedTo?.name?.toLowerCase() || "";
+                      return name.includes(filterValue.toLowerCase());
+                    }
+
+                    return true;
                   })
                   .map((task) => (
                     <tr key={task._id} className="hover:bg-slate-700">
