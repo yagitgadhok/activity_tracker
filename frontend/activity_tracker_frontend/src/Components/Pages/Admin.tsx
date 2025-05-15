@@ -5,6 +5,7 @@ const Admin = () => {
   const navigate = useNavigate();
 
   const [tasks, setTasks] = useState([]);
+  const [filterDate, setFilterDate] = useState("");
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -63,6 +64,29 @@ const Admin = () => {
             <h2 className="text-3xl font-semibold text-teal-300 mb-6 text-center">
               Task Overview
             </h2>
+
+            {/* Filter Section */}
+            <div className="mb-6 text-center">
+              <label className="mr-2 font-medium">Filter by Date:</label>
+
+              <div className="inline-flex items-center relative">
+                <input
+                  type="date"
+                  className="text-teal-500 font-semibold ps-7 py-2 pr-10 rounded-full border border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent appearance-none"
+                  value={filterDate}
+                  onChange={(e) => setFilterDate(e.target.value)}
+                />
+              </div>
+              <div className="inline-flex items-center relative">
+                <button
+                  onClick={() => setFilterDate("")}
+                  className="ml-2 bg-teal-500 text-white px-4 py-2 rounded-md hover:bg-teal-600 transition duration-300"
+                >
+                  Clear Filter
+                </button>
+              </div>
+            </div>
+
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-teal-600 text-white">
@@ -75,21 +99,35 @@ const Admin = () => {
                 </tr>
               </thead>
               <tbody className="text-gray-200">
-                {tasks.map((task) => (
-                  <tr key={task._id} className="hover:bg-slate-700">
-                    <td className="py-3 px-4 border-b">{task.assignedTo?.name || "Unknown"}</td>
-                    <td className="py-3 px-4 border-b">{task.title}</td>
-                    <td className="py-3 px-4 border-b">{task.priority}</td>
-                    <td className="py-3 px-4 border-b">{task.status}</td>
-                    <td className="py-3 px-4 border-b">{task.date ? formatDate(task.date) : "N/A"}</td>
-                    <td
-                      onClick={() => navigate(`/admin/tasks/${task._id}`)}
-                      className="py-3 px-4 border-b text-blue-400 hover:underline cursor-pointer"
-                    >
-                      View
-                    </td>
-                  </tr>
-                ))}
+                {tasks
+                  .filter((task) => {
+                    if (!filterDate) return true;
+                    if (!task.date) return false; // skip tasks with no date
+                    const taskDateObj = new Date(task.date);
+                    if (isNaN(taskDateObj.getTime())) return false; // skip invalid dates
+                    const taskDate = taskDateObj.toISOString().split("T")[0];
+                    return taskDate === filterDate;
+                  })
+                  .map((task) => (
+                    <tr key={task._id} className="hover:bg-slate-700">
+                      <td className="py-3 px-4 border-b">
+                        {task.assignedTo?.name || "Unknown"}
+                      </td>
+                      <td className="py-3 px-4 border-b">{task.title}</td>
+                      <td className="py-3 px-4 border-b">{task.priority}</td>
+                      <td className="py-3 px-4 border-b">{task.status}</td>
+                      <td className="py-3 px-4 border-b">
+                        {task.date ? formatDate(task.date) : "N/A"}
+                      </td>
+                      <td
+                        onClick={() => navigate(`/admin/tasks/${task._id}`)}
+                        className="py-3 px-4 border-b text-blue-400 hover:underline cursor-pointer"
+                      >
+                        View
+                      </td>
+                    </tr>
+                  ))}
+
                 {tasks.length === 0 && (
                   <tr>
                     <td colSpan={6} className="py-6 text-center text-gray-400">

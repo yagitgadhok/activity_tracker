@@ -1,1 +1,10 @@
 @import "tailwindcss";
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(64%) sepia(37%) saturate(749%) hue-rotate(127deg)
+    brightness(93%) contrast(88%);
+  width: 1.5rem;
+  padding: 0;
+  background-color: transparent;
+  cursor: pointer;
+}
