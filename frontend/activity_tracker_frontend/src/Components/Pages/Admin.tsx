@@ -5,8 +5,6 @@ const Admin = () => {
   const navigate = useNavigate();
 
   const [tasks, setTasks] = useState([]);
-  const [filterDate, setFilterDate] = useState("");
-  const [filterName, setFilterName] = useState("");
   const [filterType, setFilterType] = useState("date"); // "date" or "name"
   const [filterValue, setFilterValue] = useState("");
 
