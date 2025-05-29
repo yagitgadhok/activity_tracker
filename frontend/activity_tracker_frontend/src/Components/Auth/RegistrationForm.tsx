@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import axios from "axios";
+import { Link, useNavigate } from "react-router-dom";
+import apiClient from "../../utils/api";
 
 const roles = [
   { label: "User", value: "user" },
@@ -8,6 +8,7 @@ const roles = [
 ] as const;
 
 const RegistrationForm: React.FC = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -30,18 +31,34 @@ const RegistrationForm: React.FC = () => {
         : [...prev.role, value],
     }));
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-
-    try {
-      const { data } = await axios.post(
-        "http://localhost:5000/api/v1/auth/register",
+    setError(null);    try {
+      const response = await apiClient.post(
+        "/auth/register",
         formData
       );
+      
+      // Store JWT token received after registration
+      const token = response.data.token;
+      localStorage.setItem("token", token);
+      
+      // Store user info
+      localStorage.setItem("userId", response.data.user.id);
+      localStorage.setItem("userRole", JSON.stringify(response.data.user.role));
+      
       setFormData({ name: "", email: "", password: "", role: [] });
-      alert(data.message); // Display API response
+      alert(response.data.message); // Display API response
+      
+      // Redirect to appropriate page based on role
+      const roles = response.data.user.role;
+      if (roles.includes("manager")) {
+        navigate("/manager");
+      } else if (roles.includes("user")) {
+        navigate("/user");
+      } else {
+        navigate("/superAdmin");
+      }
     } catch (err: any) {
       setError(err.response?.data?.message || "Registration failed");
     }

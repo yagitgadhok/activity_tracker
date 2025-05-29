@@ -1,6 +1,6 @@
-import axios from "axios";
 import { useState, ChangeEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import apiClient from "../../utils/api";
 
 const LoginForm: React.FC = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -10,19 +10,26 @@ const LoginForm: React.FC = () => {
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/v1/auth/login",
+      const response = await apiClient.post(
+        "/auth/login",
         formData
       );
 
       // Clear form
       setFormData({ email: "", password: "" });
+
+      // Store the JWT token
+      const token = response.data.token;
+      localStorage.setItem("token", token);
+      
+      // Store user info
+      localStorage.setItem("userId", response.data.user.id);
+      localStorage.setItem("userRole", JSON.stringify(response.data.user.role));
 
       // Redirect based on role
       const roles = response.data.user.role;
@@ -33,8 +40,6 @@ const LoginForm: React.FC = () => {
       } else {
         navigate("/superAdmin");
       }
-
-      localStorage.setItem("userId", response.data.user.id);
     } catch (err: any) {
       setError(err.response?.data?.message || "Login failed");
     }

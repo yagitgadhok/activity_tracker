@@ -17,6 +17,13 @@ export const createTask = async (
       return;
     }
 
+    // Check if the user has permission to assign tasks to others
+    const isManager = req.user && req.user.role.some(role => ['manager', 'superAdmin'].includes(role));
+    if (!isManager && assignedTo !== req.user?.id) {
+      res.status(403).json({ message: "You don't have permission to assign tasks to other users" });
+      return;
+    }
+
     const newTask = new Task({
       title,
       estimatedTime,
@@ -24,6 +31,7 @@ export const createTask = async (
       priority,
       status,
       date, // Add date field
+      createdBy: req.user?.id, // Track who created the task
     });
 
     await newTask.save();
@@ -41,11 +49,20 @@ export const getTasks = async (req: Request, res: Response): Promise<void> => {
   try {
     const { assignedTo } = req.query;
     let filter = {};
+    
+    // If a specific user is requested, filter by that user
     if (assignedTo && mongoose.Types.ObjectId.isValid(assignedTo as string)) {
       filter = {
         assignedTo: new mongoose.Types.ObjectId(assignedTo as string),
       };
+    } 
+    // If no specific assignee is requested but the user is not a manager/admin, only show their tasks
+    else if (req.user && !req.user.role.some(role => ['manager', 'superAdmin'].includes(role))) {
+      filter = {
+        assignedTo: new mongoose.Types.ObjectId(req.user.id),
+      };
     }
+    // For managers/admins with no specific assignee filter, show all tasks
 
     const tasks = await Task.find(filter)
       .populate("assignedTo", "name email")

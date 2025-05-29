@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import apiClient from "../../utils/api";
+import { logout } from "../../utils/auth";
 
 // Define TypeScript interface for Task
 interface Task {
@@ -49,10 +50,9 @@ const ManagerDashboard: React.FC = () => {
         setLoading(false);
       });
   }, []);
-
   const fetchTasks = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/v1/tasks");
+      const response = await apiClient.get("/tasks");
       setTasks(response.data);
       return response.data;
     } catch (error) {
@@ -63,9 +63,7 @@ const ManagerDashboard: React.FC = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:5000/api/v1/auth/getAllUsers"
-      );
+      const response = await apiClient.get("/auth/getAllUsers");
       setUsers(response.data.users);
       return response.data.users;
     } catch (error) {
@@ -171,13 +169,8 @@ const ManagerDashboard: React.FC = () => {
       <nav className="bg-gradient-to-r from-blue-600 to-blue-800 text-white px-6 py-4 flex justify-between items-center shadow-md">
         <h2 className="text-3xl font-bold tracking-wide">Activity Tracker</h2>
         <div className="flex items-center gap-4">
-          <span className="text-white mr-2">Manager Dashboard</span>
-          <button
-            onClick={() => {
-              localStorage.removeItem("token");
-              localStorage.removeItem("userId");
-              navigate("/");
-            }}
+          <span className="text-white mr-2">Manager Dashboard</span>          <button
+            onClick={logout}
             className="bg-gradient-to-r from-gray-700 to-gray-800 text-white px-4 py-2 rounded-lg shadow-md hover:from-gray-600 hover:to-gray-700 transition font-medium"
           >
             Logout
