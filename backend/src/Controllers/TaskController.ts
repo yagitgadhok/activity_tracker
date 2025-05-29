@@ -1,6 +1,6 @@
 // controllers/TaskController.ts
 import { Request, Response } from "express";
-import Task from "../Models/Task";
+import Task, { ITaskComment, TaskCommentSchema } from "../Models/Task";
 import mongoose from "mongoose";
 
 // Create a new task
@@ -58,7 +58,9 @@ export const getTasks = async (req: Request, res: Response): Promise<void> => {
 
     const tasks = await Task.find(filter)
       .populate("assignedTo", "name email")
-      .select("title estimatedTime assignedTo priority status date"); // Include date in the response
+      .select(
+        "title estimatedTime remainingTime assignedTo priority status date"
+      ); // Include date in the response
     res.status(200).json(tasks);
   } catch (error) {
     console.error(error);
@@ -134,6 +136,69 @@ export const deleteTask = async (
     }
 
     res.status(200).json({ message: "Task deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+const TaskComment = mongoose.model<ITaskComment>(
+  "TaskComment",
+  TaskCommentSchema
+);
+
+// API: Add a comment to a task
+export const addTaskComment = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { taskId } = req.params;
+    const { user, comment } = req.body;
+
+    if (
+      !mongoose.Types.ObjectId.isValid(taskId) ||
+      !mongoose.Types.ObjectId.isValid(user)
+    ) {
+      res.status(400).json({ message: "Invalid task or user ID" });
+      return;
+    }
+    if (!comment) {
+      res.status(400).json({ message: "Comment text is required" });
+      return;
+    }
+
+    const newComment = new TaskComment({
+      task: taskId,
+      user,
+      comment,
+    });
+    await newComment.save();
+
+    res.status(201).json({ message: "Comment added", comment: newComment });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// API: Get all comments for a task
+export const getTaskComments = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { taskId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(taskId)) {
+      res.status(400).json({ message: "Invalid task ID" });
+      return;
+    }
+
+    const comments = await TaskComment.find({ task: taskId })
+      .populate("user", "name email")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(comments);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
