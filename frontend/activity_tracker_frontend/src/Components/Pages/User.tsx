@@ -12,6 +12,7 @@ interface Task {
   priority: "High" | "Medium" | "Low";
   status: "To-Do" | "In Progress" | "Completed";
   date?: string; // Add date field
+  remainingTime: string;
 }
 
 const API_URL = "http://localhost:5000/api/v1/tasks";
@@ -23,6 +24,7 @@ const UserDashboard: React.FC = () => {
   const [taskData, setTaskData] = useState<Omit<Task, "_id">>({
     title: "",
     estimatedTime: "",
+    remainingTime: "",
     assignedTo: "",
     priority: "Low",
     status: "To-Do",
@@ -78,6 +80,7 @@ const UserDashboard: React.FC = () => {
     setTaskData({
       title: "",
       estimatedTime: "",
+      remainingTime: "",
       assignedTo: "",
       priority: "Low",
       status: "To-Do",
@@ -93,6 +96,7 @@ const UserDashboard: React.FC = () => {
     setTaskData({
       title: task.title,
       estimatedTime: task.estimatedTime,
+      remainingTime: task.remainingTime,
       assignedTo: task.assignedTo._id,
       priority: task.priority,
       status: task.status,
@@ -132,6 +136,7 @@ const UserDashboard: React.FC = () => {
       setTaskData({
         title: "",
         estimatedTime: "",
+        remainingTime: "",
         assignedTo: "",
         priority: "Low",
         status: "To-Do",
@@ -174,14 +179,11 @@ const UserDashboard: React.FC = () => {
           Logout
         </button>
       </nav>
-      <div
-        className="min-h-screen bg-gradient-to-br from-gray-800 via-gray-900 to-black py-12"
-      >
+      <div className="min-h-screen bg-gradient-to-br from-gray-800 via-gray-900 to-black py-12">
         <div className="max-w-7xl mx-auto p-10 bg-gray-800 shadow-2xl rounded-xl">
           <h1 className="text-5xl font-extrabold text-center mb-10 text-white">
             User Dashboard
           </h1>
-
           {/* Add Task Button */}
           <div className="flex justify-end mb-6">
             <button
@@ -191,7 +193,6 @@ const UserDashboard: React.FC = () => {
               + Add Task
             </button>
           </div>
-
           {/* Task Table */}
           <div className="overflow-x-auto">
             <table className="w-full border-collapse border border-gray-700 bg-gray-900 rounded-lg shadow-md">
@@ -202,6 +203,9 @@ const UserDashboard: React.FC = () => {
                   </th>
                   <th className="border border-gray-700 p-4 text-left text-lg font-semibold">
                     Estimated Time
+                  </th>
+                  <th className="border border-gray-700 p-4 text-left text-lg font-semibold">
+                    Remaining Time
                   </th>
                   <th className="border border-gray-700 p-4 text-left text-lg font-semibold">
                     Assigned To
@@ -222,15 +226,31 @@ const UserDashboard: React.FC = () => {
               </thead>
               <tbody>
                 {tasks.map((task) => (
-                  <tr key={task._id} className="border border-gray-700 hover:bg-gray-800">
-                    <td className="border border-gray-700 p-4 text-gray-300">{task.title}</td>
-                    <td className="border border-gray-700 p-4 text-gray-300">{task.estimatedTime}</td>
+                  <tr
+                    key={task._id}
+                    className="border border-gray-700 hover:bg-gray-800"
+                  >
+                    <td className="border border-gray-700 p-4 text-gray-300">
+                      {task.title}
+                    </td>
+                    <td className="border border-gray-700 p-4 text-gray-300">
+                      {task.estimatedTime}
+                    </td>
+                    <td className="border border-gray-700 p-4 text-gray-300">
+                      {task.remainingTime}
+                    </td>
                     <td className="border border-gray-700 p-4 text-gray-300">
                       {task.assignedTo?.name || "Unknown"}
                     </td>
-                    <td className="border border-gray-700 p-4 text-gray-300">{task.priority}</td>
-                    <td className="border border-gray-700 p-4 text-gray-300">{task.status}</td>
-                    <td className="border border-gray-700 p-4 text-gray-300">{task.date ? formatDate(task.date) : "N/A"}</td>
+                    <td className="border border-gray-700 p-4 text-gray-300">
+                      {task.priority}
+                    </td>
+                    <td className="border border-gray-700 p-4 text-gray-300">
+                      {task.status}
+                    </td>
+                    <td className="border border-gray-700 p-4 text-gray-300">
+                      {task.date ? formatDate(task.date) : "N/A"}
+                    </td>
                     <td className="border border-gray-700 p-4 flex space-x-3">
                       <button
                         onClick={() => openEditModal(task)}
@@ -250,7 +270,6 @@ const UserDashboard: React.FC = () => {
               </tbody>
             </table>
           </div>
-
           {/* Modal */}
           <Modal
             isOpen={modalIsOpen}
@@ -335,7 +354,6 @@ const UserDashboard: React.FC = () => {
               </button>
             </div>
           </Modal>
-
           {/* Confirm Delete Modal */}
           <Modal
             isOpen={confirmDeleteModal}

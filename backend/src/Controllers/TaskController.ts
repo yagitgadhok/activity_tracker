@@ -9,7 +9,15 @@ export const createTask = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { title, estimatedTime, assignedTo, priority, status, date } = req.body;
+    const {
+      title,
+      estimatedTime,
+      remainingTime,
+      assignedTo,
+      priority,
+      status,
+      date,
+    } = req.body;
 
     // Validate assignedTo before creating the task
     if (!mongoose.Types.ObjectId.isValid(assignedTo)) {
@@ -20,6 +28,7 @@ export const createTask = async (
     const newTask = new Task({
       title,
       estimatedTime,
+      remainingTime,
       assignedTo: new mongoose.Types.ObjectId(assignedTo),
       priority,
       status,

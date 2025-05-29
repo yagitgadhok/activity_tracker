@@ -118,6 +118,7 @@ const Admin = () => {
                   <th className="py-3 px-4 border-b">Priority</th>
                   <th className="py-3 px-4 border-b">Status</th>
                   <th className="py-3 px-4 border-b">Date</th>
+                  <th className="py-3 px-4 border-b">Remaining Time</th>
                   <th className="py-3 px-4 border-b">Actions</th>
                 </tr>
               </thead>
@@ -151,6 +152,9 @@ const Admin = () => {
                       <td className="py-3 px-4 border-b">{task.status}</td>
                       <td className="py-3 px-4 border-b">
                         {task.date ? formatDate(task.date) : "N/A"}
+                      </td>
+                      <td className="py-3 px-4 border-b">
+                        {task.remainingTime || "N/A"}
                       </td>
                       <td
                         onClick={() => navigate(`/admin/tasks/${task._id}`)}
