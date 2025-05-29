@@ -28,6 +28,7 @@ const ManagerDashboard: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   
   // Filters
   const [employeeFilter, setEmployeeFilter] = useState<string>("");
@@ -210,104 +211,116 @@ const ManagerDashboard: React.FC = () => {
                 {tasks.filter(task => task.status === 'In Progress').length}
               </p>
             </div>
-          </div>
-
-          {/* Filter Panel */}
-          <div className="bg-gray-900 rounded-xl p-6 mb-8 shadow-lg">
-            <h2 className="text-2xl font-bold text-white mb-4">Filter Tasks</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-              {/* Employee Filter */}
-              <div>
-                <label className="block text-gray-400 mb-2">Employee</label>
-                <select
-                  value={employeeFilter}
-                  onChange={(e) => setEmployeeFilter(e.target.value)}
-                  className="w-full bg-gray-800 text-white border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">All Employees</option>
-                  {users.map((user) => (
-                    <option key={user._id} value={user._id}>
-                      {user.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              
-              {/* Status Filter */}
-              <div>
-                <label className="block text-gray-400 mb-2">Status</label>
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="w-full bg-gray-800 text-white border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">All Statuses</option>
-                  <option value="To-Do">To-Do</option>
-                  <option value="In Progress">In Progress</option>
-                  <option value="Completed">Completed</option>
-                </select>
-              </div>
-              
-              {/* Priority Filter */}
-              <div>
-                <label className="block text-gray-400 mb-2">Priority</label>
-                <select
-                  value={priorityFilter}
-                  onChange={(e) => setPriorityFilter(e.target.value)}
-                  className="w-full bg-gray-800 text-white border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">All Priorities</option>
-                  <option value="High">High</option>
-                  <option value="Medium">Medium</option>
-                  <option value="Low">Low</option>
-                </select>
-              </div>
-              
-              {/* Start Date */}
-              <div>
-                <label className="block text-gray-400 mb-2">Start Date</label>
-                <input
-                  type="date"
-                  value={startDateFilter}
-                  onChange={(e) => setStartDateFilter(e.target.value)}
-                  className="w-full bg-gray-800 text-white border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              
-              {/* End Date */}
-              <div>
-                <label className="block text-gray-400 mb-2">End Date</label>
-                <input
-                  type="date"
-                  value={endDateFilter}
-                  onChange={(e) => setEndDateFilter(e.target.value)}
-                  className="w-full bg-gray-800 text-white border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              
-              {/* Search Term */}
-              <div>
-                <label className="block text-gray-400 mb-2">Search</label>
-                <input
-                  type="text"
-                  placeholder="Search task title..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full bg-gray-800 text-white border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+          </div>          {/* Filter Panel - Accordion */}
+          <div className="bg-gray-900 rounded-xl mb-8 shadow-lg">
+            <div 
+              className="p-6 flex justify-between items-center cursor-pointer"
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
+            >
+              <h2 className="text-2xl font-bold text-white">Filter Tasks</h2>
+              <div className="text-white text-2xl transform transition-transform duration-300" style={{ 
+                transform: isFilterOpen ? 'rotate(180deg)' : 'rotate(0deg)'
+              }}>
+                ▼
               </div>
             </div>
             
-            {/* Reset Filters Button */}
-            <div className="flex justify-end">
-              <button
-                onClick={resetFilters}
-                className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition duration-300"
-              >
-                Reset Filters
-              </button>
-            </div>
+            {isFilterOpen && (
+              <div className="px-6 pb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                  {/* Employee Filter */}
+                  <div>
+                    <label className="block text-gray-400 mb-2">Employee</label>
+                    <select
+                      value={employeeFilter}
+                      onChange={(e) => setEmployeeFilter(e.target.value)}
+                      className="w-full bg-gray-800 text-white border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">All Employees</option>
+                      {users.map((user) => (
+                        <option key={user._id} value={user._id}>
+                          {user.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  {/* Status Filter */}
+                  <div>
+                    <label className="block text-gray-400 mb-2">Status</label>
+                    <select
+                      value={statusFilter}
+                      onChange={(e) => setStatusFilter(e.target.value)}
+                      className="w-full bg-gray-800 text-white border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">All Statuses</option>
+                      <option value="To-Do">To-Do</option>
+                      <option value="In Progress">In Progress</option>
+                      <option value="Completed">Completed</option>
+                    </select>
+                  </div>
+                  
+                  {/* Priority Filter */}
+                  <div>
+                    <label className="block text-gray-400 mb-2">Priority</label>
+                    <select
+                      value={priorityFilter}
+                      onChange={(e) => setPriorityFilter(e.target.value)}
+                      className="w-full bg-gray-800 text-white border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">All Priorities</option>
+                      <option value="High">High</option>
+                      <option value="Medium">Medium</option>
+                      <option value="Low">Low</option>
+                    </select>
+                  </div>
+                  
+                  {/* Start Date */}
+                  <div>
+                    <label className="block text-gray-400 mb-2">Start Date</label>
+                    <input
+                      type="date"
+                      value={startDateFilter}
+                      onChange={(e) => setStartDateFilter(e.target.value)}
+                      className="w-full bg-gray-800 text-white border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  
+                  {/* End Date */}
+                  <div>
+                    <label className="block text-gray-400 mb-2">End Date</label>
+                    <input
+                      type="date"
+                      value={endDateFilter}
+                      onChange={(e) => setEndDateFilter(e.target.value)}
+                      className="w-full bg-gray-800 text-white border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  
+                  {/* Search Term */}
+                  <div>
+                    <label className="block text-gray-400 mb-2">Search</label>
+                    <input
+                      type="text"
+                      placeholder="Search task title..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full bg-gray-800 text-white border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+                
+                {/* Reset Filters Button */}
+                <div className="flex justify-end">
+                  <button
+                    onClick={resetFilters}
+                    className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition duration-300"
+                  >
+                    Reset Filters
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Task Table */}
