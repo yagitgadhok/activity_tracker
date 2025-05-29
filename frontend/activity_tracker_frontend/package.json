@@ -12,7 +12,7 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.0.14",
     "activity_tracker_frontend": "file:",
-    "axios": "^1.8.4",
+    "axios": "^1.10.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-modal": "^3.16.3",

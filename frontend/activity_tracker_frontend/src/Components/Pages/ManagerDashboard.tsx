@@ -2,12 +2,14 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import apiClient from "../../utils/api";
 import { logout } from "../../utils/auth";
+import axios from "axios";
 
 // Define TypeScript interface for Task
 interface Task {
   _id: string;
   title: string;
   estimatedTime: string;
+  remainingTime: string;
   assignedTo: {
     _id: string;
     name: string;
@@ -69,7 +71,7 @@ const ManagerDashboard: React.FC = () => {
 
   const fetchTasks = async () => {
     try {
-      const response = await apiClient.get("/tasks");
+      const response = await axios.get("http://localhost:5000/api/v1/tasks");
       setTasks(response.data);
       return response.data;
     } catch (error) {
@@ -80,7 +82,9 @@ const ManagerDashboard: React.FC = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await apiClient.get("/auth/getAllUsers");
+      const response = await axios.get(
+        "http://localhost:5000/api/v1/auth/getAllUsers"
+      );
       setUsers(response.data.users);
       return response.data.users;
     } catch (error) {

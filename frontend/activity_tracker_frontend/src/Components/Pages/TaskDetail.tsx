@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import apiClient from '../../utils/api';
-import { logout } from '../../utils/auth';
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import axios from "axios";
+import { logout } from "../../utils/auth";
 
 interface Task {
   _id: string;
   title: string;
   estimatedTime: string;
+  remainingTime: string;
   assignedTo: {
     _id: string;
     name: string;
@@ -22,18 +23,20 @@ const TaskDetail: React.FC = () => {
   const [task, setTask] = useState<Task | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [comment, setComment] = useState('');
-  
+  const [comment, setComment] = useState("");
+
   const navigate = useNavigate();
   useEffect(() => {
     const fetchTaskDetails = async () => {
       try {
-        const response = await apiClient.get(`/tasks/${taskId}`);
+        const response = await axios.get(
+          `http://localhost:5000/api/v1/tasks/${taskId}`
+        );
         setTask(response.data);
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching task details:', err);
-        setError('Failed to load task details');
+        console.error("Error fetching task details:", err);
+        setError("Failed to load task details");
         setLoading(false);
       }
     };
@@ -51,15 +54,40 @@ const TaskDetail: React.FC = () => {
     return `${month}/${day}/${year}`;
   };
 
-  const handleAddComment = () => {
+  const handleAddComment = async () => {
     if (!comment.trim()) {
-      alert('Please enter a comment');
+      alert("Please enter a comment");
       return;
     }
-    
-    // In a real implementation, this would save the comment to the backend
-    alert(`Comment added: ${comment}`);
-    setComment('');
+
+    try {
+      // Get userId from localStorage or your auth context
+      const userId = localStorage.getItem("userId");
+      if (!userId) {
+        alert("User not found. Please log in again.");
+        return;
+      }
+
+      if (!task) {
+        alert("Task not found. Please try again.");
+        return;
+      }
+
+      await axios.post(
+        `http://localhost:5000/api/v1/tasks/${task._id}/comments`,
+        {
+          user: userId,
+          comment,
+        }
+      );
+
+      alert("Comment added!");
+      setComment("");
+      // Optionally, refresh comments here if you display them
+    } catch (err) {
+      alert("Failed to add comment.");
+      console.error(err);
+    }
   };
 
   if (loading) {
@@ -73,9 +101,11 @@ const TaskDetail: React.FC = () => {
   if (error || !task) {
     return (
       <div className="min-h-screen flex flex-col justify-center items-center bg-gray-900">
-        <div className="text-white text-xl mb-4">{error || 'Failed to load task'}</div>
-        <button 
-          onClick={() => navigate('/manager')}
+        <div className="text-white text-xl mb-4">
+          {error || "Failed to load task"}
+        </div>
+        <button
+          onClick={() => navigate("/manager")}
           className="bg-blue-600 text-white px-4 py-2 rounded-md"
         >
           Return to Dashboard
@@ -90,11 +120,12 @@ const TaskDetail: React.FC = () => {
         <h2 className="text-3xl font-bold tracking-wide">Activity Tracker</h2>
         <div className="flex items-center space-x-4">
           <button
-            onClick={() => navigate('/manager')}
+            onClick={() => navigate("/manager")}
             className="bg-blue-900 hover:bg-blue-800 text-white px-4 py-2 rounded-lg transition"
           >
             Back to Dashboard
-          </button>          <button
+          </button>{" "}
+          <button
             onClick={logout}
             className="bg-gradient-to-r from-gray-700 to-gray-800 text-white px-4 py-2 rounded-lg shadow-md hover:from-gray-600 hover:to-gray-700 transition font-medium"
           >
@@ -117,26 +148,40 @@ const TaskDetail: React.FC = () => {
               </div>
               <div>
                 <h3 className="text-gray-400 text-sm mb-1">Assigned To</h3>
-                <p className="text-white text-lg font-medium">{task.assignedTo?.name || "Unknown"}</p>
+                <p className="text-white text-lg font-medium">
+                  {task.assignedTo?.name || "Unknown"}
+                </p>
               </div>
               <div>
                 <h3 className="text-gray-400 text-sm mb-1">Estimated Time</h3>
-                <p className="text-white text-lg font-medium">{task.estimatedTime}</p>
+                <p className="text-white text-lg font-medium">
+                  {task.estimatedTime}
+                </p>
+              </div>
+              <div>
+                <h3 className="text-gray-400 text-sm mb-1">Remaining Time</h3>
+                <p className="text-white text-lg font-medium">
+                  {task.remainingTime || "0"}
+                </p>
               </div>
               <div>
                 <h3 className="text-gray-400 text-sm mb-1">Due Date</h3>
-                <p className="text-white text-lg font-medium">{task.date ? formatDate(task.date) : "N/A"}</p>
+                <p className="text-white text-lg font-medium">
+                  {task.date ? formatDate(task.date) : "N/A"}
+                </p>
               </div>
               <div>
                 <h3 className="text-gray-400 text-sm mb-1">Priority</h3>
                 <div className="mt-1">
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    task.priority === "High" 
-                      ? "bg-red-900 text-red-200" 
-                      : task.priority === "Medium" 
-                      ? "bg-yellow-900 text-yellow-200" 
-                      : "bg-blue-900 text-blue-200"
-                  }`}>
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      task.priority === "High"
+                        ? "bg-red-900 text-red-200"
+                        : task.priority === "Medium"
+                        ? "bg-yellow-900 text-yellow-200"
+                        : "bg-blue-900 text-blue-200"
+                    }`}
+                  >
                     {task.priority}
                   </span>
                 </div>
@@ -144,13 +189,15 @@ const TaskDetail: React.FC = () => {
               <div>
                 <h3 className="text-gray-400 text-sm mb-1">Status</h3>
                 <div className="mt-1">
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    task.status === "Completed" 
-                      ? "bg-green-900 text-green-200" 
-                      : task.status === "In Progress" 
-                      ? "bg-purple-900 text-purple-200" 
-                      : "bg-gray-700 text-gray-200"
-                  }`}>
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      task.status === "Completed"
+                        ? "bg-green-900 text-green-200"
+                        : task.status === "In Progress"
+                        ? "bg-purple-900 text-purple-200"
+                        : "bg-gray-700 text-gray-200"
+                    }`}
+                  >
                     {task.status}
                   </span>
                 </div>
@@ -160,7 +207,9 @@ const TaskDetail: React.FC = () => {
 
           {/* Manager Comments Section */}
           <div className="bg-gray-900 rounded-lg p-6 mb-8">
-            <h2 className="text-xl font-semibold text-white mb-4">Manager Feedback</h2>
+            <h2 className="text-xl font-semibold text-white mb-4">
+              Manager Feedback
+            </h2>
             <textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
@@ -168,7 +217,7 @@ const TaskDetail: React.FC = () => {
               className="w-full bg-gray-800 text-white border border-gray-700 rounded p-4 focus:outline-none focus:ring-2 focus:ring-blue-500 h-32"
             ></textarea>
             <div className="flex justify-end mt-4">
-              <button 
+              <button
                 onClick={handleAddComment}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition"
               >
@@ -179,9 +228,14 @@ const TaskDetail: React.FC = () => {
 
           {/* Task History Section */}
           <div className="bg-gray-900 rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-white mb-4">Task History</h2>
+            <h2 className="text-xl font-semibold text-white mb-4">
+              Task History
+            </h2>
             <div className="text-gray-400 italic">
-              <p>In a production environment, this would show task status changes, edits, and comments over time.</p>
+              <p>
+                In a production environment, this would show task status
+                changes, edits, and comments over time.
+              </p>
             </div>
           </div>
         </div>

@@ -5,16 +5,28 @@ import { useNavigate } from "react-router-dom";
 import apiClient from "../../utils/api";
 import { logout } from "../../utils/auth";
 
+import axios from "axios";
+
 // Define TypeScript interface for Task
 interface Task {
   _id: string;
   title: string;
   estimatedTime: string;
+  remainingTime: string;
   assignedTo: any;
   priority: "High" | "Medium" | "Low";
   status: "To-Do" | "In Progress" | "Completed";
   date?: string;
 }
+
+interface TaskComment {
+  _id: string;
+  user: { name: string; _id: string };
+  comment: string;
+  createdAt: string;
+}
+
+const API_URL = "http://localhost:5000/api/v1/tasks";
 
 const EmployeeDashboard: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -23,6 +35,7 @@ const EmployeeDashboard: React.FC = () => {
   const [taskData, setTaskData] = useState<Omit<Task, "_id">>({
     title: "",
     estimatedTime: "",
+    remainingTime: "",
     assignedTo: "",
     priority: "Low",
     status: "To-Do",
@@ -33,6 +46,12 @@ const EmployeeDashboard: React.FC = () => {
   const [taskToDeleteId, setTaskToDeleteId] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState<string>("");
+
+  const [comments, setComments] = useState<{ [taskId: string]: TaskComment[] }>(
+    {}
+  );
+
+  const [showCommentsFor, setShowCommentsFor] = useState<string | null>(null);
 
   // Pagination
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -47,12 +66,23 @@ const EmployeeDashboard: React.FC = () => {
   }, []);
   const fetchTasks = async () => {
     try {
-      const response = await apiClient.get<Task[]>(
-        `/tasks?assignedTo=${loggedInUserId}`
+      const response = await axios.get<Task[]>(
+        `${API_URL}?assignedTo=${loggedInUserId}`
       );
       setTasks(response.data);
     } catch (error) {
       console.error("Error fetching tasks:", error);
+    }
+  };
+
+  const fetchComments = async (taskId: string) => {
+    try {
+      const response = await axios.get<TaskComment[]>(
+        `http://localhost:5000/api/v1/tasks/${taskId}/comments`
+      );
+      setComments((prev) => ({ ...prev, [taskId]: response.data }));
+    } catch (error) {
+      console.error("Error fetching comments:", error);
     }
   };
 
@@ -67,6 +97,7 @@ const EmployeeDashboard: React.FC = () => {
     setTaskData({
       title: "",
       estimatedTime: "",
+      remainingTime: "",
       assignedTo: loggedInUserId || "",
       priority: "Low",
       status: "To-Do",
@@ -82,6 +113,7 @@ const EmployeeDashboard: React.FC = () => {
     setTaskData({
       title: task.title,
       estimatedTime: task.estimatedTime,
+      remainingTime: task.remainingTime,
       assignedTo: task.assignedTo._id,
       priority: task.priority,
       status: task.status,
@@ -111,10 +143,10 @@ const EmployeeDashboard: React.FC = () => {
 
       if (editMode && editTaskId) {
         // Update existing task
-        await apiClient.put(`/tasks/${editTaskId}`, dataToSubmit);
+        await axios.put(`${API_URL}/${editTaskId}`, dataToSubmit);
       } else {
         // Create new task
-        await apiClient.post('/tasks', dataToSubmit);
+        await axios.post(API_URL, dataToSubmit);
       }
 
       fetchTasks();
@@ -124,6 +156,7 @@ const EmployeeDashboard: React.FC = () => {
       setTaskData({
         title: "",
         estimatedTime: "",
+        remainingTime: "",
         assignedTo: "",
         priority: "Low",
         status: "To-Do",
@@ -136,7 +169,7 @@ const EmployeeDashboard: React.FC = () => {
   // Delete task
   const deleteTask = async (id: string) => {
     try {
-      await apiClient.delete(`/tasks/${id}`);
+      await axios.delete(`${API_URL}/${id}`);
       setTasks(tasks.filter((task) => task._id !== id)); // Immediately update UI
     } catch (error) {
       console.error("Error deleting task:", error);
@@ -186,7 +219,8 @@ const EmployeeDashboard: React.FC = () => {
       <nav className="bg-gradient-to-r from-teal-500 to-cyan-600 text-white px-6 py-4 flex justify-between items-center shadow-lg">
         <h2 className="text-3xl font-bold tracking-wide">Activity Tracker</h2>
         <div className="flex items-center gap-4">
-          <span className="text-white mr-2">Employee Dashboard</span>          <button
+          <span className="text-white mr-2">Employee Dashboard</span>{" "}
+          <button
             onClick={logout}
             className="bg-gradient-to-r from-gray-700 to-gray-800 text-white px-4 py-2 rounded-lg shadow-md hover:from-gray-600 hover:to-gray-700 transition font-medium"
           >
@@ -264,6 +298,12 @@ const EmployeeDashboard: React.FC = () => {
                           </span>
                         </p>
                         <p>
+                          Remaining Time:{" "}
+                          <span className="text-gray-300">
+                            {task.remainingTime || "0"}
+                          </span>
+                        </p>
+                        <p>
                           Due Date:{" "}
                           <span className="text-gray-300">
                             {formatDate(task.date || "")}
@@ -314,7 +354,56 @@ const EmployeeDashboard: React.FC = () => {
                             </button>
                           </>
                         )}
+                        <button
+                          onClick={async () => {
+                            setShowCommentsFor(
+                              showCommentsFor === task._id ? null : task._id
+                            );
+                            if (!comments[task._id]) {
+                              await fetchComments(task._id);
+                            }
+                          }}
+                          className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white rounded-lg shadow-md hover:from-cyan-700 hover:to-cyan-800 transition font-medium"
+                        >
+                          {showCommentsFor === task._id
+                            ? "Hide Comments"
+                            : "Show Comments"}
+                        </button>
                       </div>
+
+                      {/* Comments Section */}
+                      {showCommentsFor === task._id && (
+                        <div className="mt-4 bg-gray-800 rounded-lg p-4">
+                          <h4 className="text-lg font-semibold text-teal-300 mb-2">
+                            Comments
+                          </h4>
+                          {comments[task._id] &&
+                          comments[task._id].length > 0 ? (
+                            <ul className="space-y-2">
+                              {comments[task._id].map((c) => (
+                                <li
+                                  key={c._id}
+                                  className="border-b border-gray-700 pb-2"
+                                >
+                                  <span className="text-teal-400 font-medium">
+                                    {c.user?.name || "User"}:
+                                  </span>{" "}
+                                  <span className="text-gray-200">
+                                    {c.comment}
+                                  </span>
+                                  <div className="text-xs text-gray-400">
+                                    {new Date(c.createdAt).toLocaleString()}
+                                  </div>
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <div className="text-gray-400">
+                              No comments yet.
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))
@@ -411,6 +500,9 @@ const EmployeeDashboard: React.FC = () => {
                     Estimated Time
                   </th>
                   <th className="border border-gray-700 p-4 text-left text-lg font-semibold">
+                    Remaining Time
+                  </th>
+                  <th className="border border-gray-700 p-4 text-left text-lg font-semibold">
                     Priority
                   </th>
                   <th className="border border-gray-700 p-4 text-left text-lg font-semibold">
@@ -446,6 +538,9 @@ const EmployeeDashboard: React.FC = () => {
                       </td>
                       <td className="border border-gray-700 p-4 text-gray-300">
                         {task.estimatedTime}
+                      </td>
+                      <td className="border border-gray-700 p-4 text-gray-300">
+                        {task.remainingTime || "0"}
                       </td>
                       <td className="border border-gray-700 p-4 text-gray-300">
                         <span
@@ -658,6 +753,14 @@ const EmployeeDashboard: React.FC = () => {
                 name="estimatedTime"
                 placeholder="Estimated Time (e.g., 2 hrs)"
                 value={taskData.estimatedTime}
+                onChange={handleChange}
+                className="w-full border border-gray-600 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-lg bg-gray-700 text-white"
+              />
+              <input
+                type="text"
+                name="remainingTime"
+                placeholder="Remaining Time (e.g., 1 hr)"
+                value={taskData.remainingTime}
                 onChange={handleChange}
                 className="w-full border border-gray-600 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 text-lg bg-gray-700 text-white"
               />
