@@ -1,3 +1,4 @@
+// filepath: c:\Users\nigkumar\Desktop\Project\ActvityTracker\activity_tracker\frontend\activity_tracker_frontend\src\Components\Pages\EmployeeDashboard.tsx
 import { useState, useEffect } from "react";
 import Modal from "react-modal";
 import { useNavigate } from "react-router-dom";
@@ -32,7 +33,11 @@ const EmployeeDashboard: React.FC = () => {
   const [taskToDeleteId, setTaskToDeleteId] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState<string>("");
-  
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [itemsPerPage, setItemsPerPage] = useState<number>(6);
+
   const loggedInUserId = localStorage.getItem("userId");
   const navigate = useNavigate();
 
@@ -147,13 +152,29 @@ const EmployeeDashboard: React.FC = () => {
     const year = date.getFullYear();
     return `${month}/${day}/${year}`;
   };
-  
+
   // Filter tasks based on search term and status
   const filteredTasks = tasks.filter((task) => {
-    const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = task.title
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus ? task.status === filterStatus : true;
     return matchesSearch && matchesStatus;
   });
+
+  // Pagination logic
+  const totalItems = filteredTasks.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+  // Get current page tasks
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredTasks.slice(indexOfFirstItem, indexOfLastItem);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterStatus, searchTerm]);
 
   // Check if task can be edited or deleted (only To-Do or In Progress tasks)
   const canEditOrDelete = (status: string) => {
@@ -173,9 +194,7 @@ const EmployeeDashboard: React.FC = () => {
           </button>
         </div>
       </nav>
-      <div
-        className="min-h-screen bg-gradient-to-br from-gray-800 via-gray-900 to-black py-12"
-      >
+      <div className="min-h-screen bg-gradient-to-br from-gray-800 via-gray-900 to-black py-12">
         <div className="max-w-7xl mx-auto p-10 bg-gray-800 shadow-2xl rounded-xl">
           <h1 className="text-5xl font-extrabold text-center mb-10 text-white">
             My Tasks
@@ -192,7 +211,7 @@ const EmployeeDashboard: React.FC = () => {
                 className="w-full px-4 py-3 rounded-lg bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-teal-500"
               />
             </div>
-            
+
             <div className="flex gap-4">
               <select
                 value={filterStatus}
@@ -204,7 +223,7 @@ const EmployeeDashboard: React.FC = () => {
                 <option value="In Progress">In Progress</option>
                 <option value="Completed">Completed</option>
               </select>
-              
+
               <button
                 onClick={openModal}
                 className="bg-gradient-to-r from-teal-500 to-teal-600 text-white px-6 py-3 rounded-lg shadow-lg hover:from-teal-600 hover:to-teal-700 transition font-semibold"
@@ -215,9 +234,103 @@ const EmployeeDashboard: React.FC = () => {
           </div>
 
           {/* Task Cards Grid - Alternative to Table */}
+          {/* Task Cards Grid - Show only "In Progress" tasks */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {filteredTasks.length > 0 ? (
-              filteredTasks.map((task) => (
+            {tasks.filter((task) => task.status === "In Progress").length >
+            0 ? (
+              tasks
+                .filter((task) => task.status === "In Progress")
+                .map((task) => (
+                  <div
+                    key={task._id}
+                    className={`bg-gray-900 border border-gray-700 rounded-xl shadow-lg overflow-hidden ${
+                      task.priority === "High"
+                        ? "border-l-4 border-l-red-500"
+                        : task.priority === "Medium"
+                        ? "border-l-4 border-l-yellow-500"
+                        : "border-l-4 border-l-blue-500"
+                    }`}
+                  >
+                    <div className="p-6">
+                      <h3 className="text-xl font-bold text-white mb-2">
+                        {task.title}
+                      </h3>
+
+                      <div className="text-sm text-gray-400 mb-4">
+                        <p>
+                          Estimated Time:{" "}
+                          <span className="text-gray-300">
+                            {task.estimatedTime}
+                          </span>
+                        </p>
+                        <p>
+                          Due Date:{" "}
+                          <span className="text-gray-300">
+                            {formatDate(task.date || "")}
+                          </span>
+                        </p>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            task.priority === "High"
+                              ? "bg-red-900 text-red-200"
+                              : task.priority === "Medium"
+                              ? "bg-yellow-900 text-yellow-200"
+                              : "bg-blue-900 text-blue-200"
+                          }`}
+                        >
+                          {task.priority}
+                        </span>
+
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            task.status === "Completed"
+                              ? "bg-green-900 text-green-200"
+                              : task.status === "In Progress"
+                              ? "bg-purple-900 text-purple-200"
+                              : "bg-gray-700 text-gray-200"
+                          }`}
+                        >
+                          {task.status}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-end gap-2 mt-4">
+                        {canEditOrDelete(task.status) && (
+                          <>
+                            <button
+                              onClick={() => openEditModal(task)}
+                              className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow-md hover:from-blue-600 hover:to-blue-700 transition font-medium"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => confirmDelete(task._id)}
+                              className="px-4 py-2 bg-gradient-to-r from-gray-700 to-gray-800 text-white rounded-lg shadow-md hover:from-gray-600 hover:to-gray-700 transition font-medium"
+                            >
+                              Delete
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))
+            ) : (
+              <div className="col-span-full text-center py-8 text-gray-400">
+                No "In Progress" tasks found.
+              </div>
+            )}
+          </div>
+          {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {filteredTasks.length > 0 && currentItems.length === 0 ? (
+              <div className="col-span-full text-center py-8 text-gray-400">
+                No tasks on this page. Try changing the page or adjusting your filters.
+              </div>
+            ) : currentItems.length > 0 ? (
+              currentItems.map((task) => (
                 <div 
                   key={task._id} 
                   className={`bg-gray-900 border border-gray-700 rounded-xl shadow-lg overflow-hidden ${
@@ -284,7 +397,7 @@ const EmployeeDashboard: React.FC = () => {
                 No tasks found. Create a new task to get started.
               </div>
             )}
-          </div>
+          </div> */}
 
           {/* Task Table - Alternative View */}
           <div className="overflow-x-auto">
@@ -312,34 +425,57 @@ const EmployeeDashboard: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredTasks.length > 0 ? (
-                  filteredTasks.map((task) => (
-                    <tr key={task._id} className="border border-gray-700 hover:bg-gray-800">
-                      <td className="border border-gray-700 p-4 text-gray-300">{task.title}</td>
-                      <td className="border border-gray-700 p-4 text-gray-300">{task.estimatedTime}</td>
+                {filteredTasks.length > 0 && currentItems.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      className="border border-gray-700 p-6 text-center text-gray-400"
+                    >
+                      No tasks on this page. Try changing the page or adjusting
+                      your filters.
+                    </td>
+                  </tr>
+                ) : currentItems.length > 0 ? (
+                  currentItems.map((task) => (
+                    <tr
+                      key={task._id}
+                      className="border border-gray-700 hover:bg-gray-800"
+                    >
                       <td className="border border-gray-700 p-4 text-gray-300">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          task.priority === "High" 
-                            ? "bg-red-900 text-red-200" 
-                            : task.priority === "Medium" 
-                            ? "bg-yellow-900 text-yellow-200" 
-                            : "bg-blue-900 text-blue-200"
-                        }`}>
+                        {task.title}
+                      </td>
+                      <td className="border border-gray-700 p-4 text-gray-300">
+                        {task.estimatedTime}
+                      </td>
+                      <td className="border border-gray-700 p-4 text-gray-300">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            task.priority === "High"
+                              ? "bg-red-900 text-red-200"
+                              : task.priority === "Medium"
+                              ? "bg-yellow-900 text-yellow-200"
+                              : "bg-blue-900 text-blue-200"
+                          }`}
+                        >
                           {task.priority}
                         </span>
                       </td>
                       <td className="border border-gray-700 p-4 text-gray-300">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          task.status === "Completed" 
-                            ? "bg-green-900 text-green-200" 
-                            : task.status === "In Progress" 
-                            ? "bg-purple-900 text-purple-200" 
-                            : "bg-gray-700 text-gray-200"
-                        }`}>
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            task.status === "Completed"
+                              ? "bg-green-900 text-green-200"
+                              : task.status === "In Progress"
+                              ? "bg-purple-900 text-purple-200"
+                              : "bg-gray-700 text-gray-200"
+                          }`}
+                        >
                           {task.status}
                         </span>
                       </td>
-                      <td className="border border-gray-700 p-4 text-gray-300">{task.date ? formatDate(task.date) : "N/A"}</td>
+                      <td className="border border-gray-700 p-4 text-gray-300">
+                        {task.date ? formatDate(task.date) : "N/A"}
+                      </td>
                       <td className="border border-gray-700 p-4">
                         {canEditOrDelete(task.status) ? (
                           <div className="flex gap-2">
@@ -357,14 +493,19 @@ const EmployeeDashboard: React.FC = () => {
                             </button>
                           </div>
                         ) : (
-                          <span className="text-gray-500 text-sm">No actions available</span>
+                          <span className="text-gray-500 text-sm">
+                            No actions available
+                          </span>
                         )}
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={6} className="border border-gray-700 p-6 text-center text-gray-400">
+                    <td
+                      colSpan={6}
+                      className="border border-gray-700 p-6 text-center text-gray-400"
+                    >
                       No tasks found. Create a new task to get started.
                     </td>
                   </tr>
@@ -372,6 +513,126 @@ const EmployeeDashboard: React.FC = () => {
               </tbody>
             </table>
           </div>
+
+          {/* Pagination Controls */}
+          {filteredTasks.length > 0 && (
+            <div className="mt-8 bg-gray-900 p-4 rounded-xl border border-gray-700 shadow-lg">
+              <div className="flex flex-col md:flex-row justify-between items-center">
+                <div className="text-gray-400 mb-4 md:mb-0">
+                  Showing{" "}
+                  <span className="font-medium text-teal-400">
+                    {indexOfFirstItem + 1}-
+                    {Math.min(indexOfLastItem, filteredTasks.length)}{" "}
+                  </span>
+                  of{" "}
+                  <span className="font-medium text-teal-400">
+                    {filteredTasks.length}
+                  </span>{" "}
+                  tasks
+                </div>
+
+                <div className="flex flex-wrap gap-2 justify-center">
+                  {/* Page Number Buttons */}
+                  <div className="flex">
+                    <button
+                      onClick={() => setCurrentPage(1)}
+                      disabled={currentPage === 1}
+                      className={`px-3 py-1 rounded-l ${
+                        currentPage === 1
+                          ? "bg-gray-700 text-gray-500 cursor-not-allowed"
+                          : "bg-teal-700 text-white hover:bg-teal-600"
+                      }`}
+                    >
+                      &laquo;
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        setCurrentPage((prev) => Math.max(prev - 1, 1))
+                      }
+                      disabled={currentPage === 1}
+                      className={`px-3 py-1 ${
+                        currentPage === 1
+                          ? "bg-gray-700 text-gray-500 cursor-not-allowed"
+                          : "bg-teal-700 text-white hover:bg-teal-600"
+                      }`}
+                    ></button>
+
+                    {Array.from({ length: Math.min(5, totalPages) }).map(
+                      (_, idx) => {
+                        // Show pages around current page
+                        let pageToShow: number;
+                        if (totalPages <= 5) {
+                          pageToShow = idx + 1;
+                        } else if (currentPage <= 3) {
+                          pageToShow = idx + 1;
+                        } else if (currentPage >= totalPages - 2) {
+                          pageToShow = totalPages - 4 + idx;
+                        } else {
+                          pageToShow = currentPage - 2 + idx;
+                        }
+
+                        return (
+                          <button
+                            key={pageToShow}
+                            onClick={() => setCurrentPage(pageToShow)}
+                            className={`px-3 py-1 ${
+                              currentPage === pageToShow
+                                ? "bg-teal-500 text-white font-bold"
+                                : "bg-gray-700 text-white hover:bg-gray-600"
+                            }`}
+                          >
+                            {pageToShow}
+                          </button>
+                        );
+                      }
+                    )}
+
+                    <button
+                      onClick={() =>
+                        setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                      }
+                      disabled={currentPage === totalPages}
+                      className={`px-3 py-1 ${
+                        currentPage === totalPages
+                          ? "bg-gray-700 text-gray-500 cursor-not-allowed"
+                          : "bg-teal-700 text-white hover:bg-teal-600"
+                      }`}
+                    ></button>
+
+                    <button
+                      onClick={() => setCurrentPage(totalPages)}
+                      disabled={currentPage === totalPages}
+                      className={`px-3 py-1 rounded-r ${
+                        currentPage === totalPages
+                          ? "bg-gray-700 text-gray-500 cursor-not-allowed"
+                          : "bg-teal-700 text-white hover:bg-teal-600"
+                      }`}
+                    >
+                      &raquo;
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 mt-4 md:mt-0">
+                  <label className="text-gray-400">Items per page:</label>
+                  <select
+                    value={itemsPerPage}
+                    onChange={(e) => {
+                      setItemsPerPage(Number(e.target.value));
+                      setCurrentPage(1); // Reset to first page
+                    }}
+                    className="bg-gray-800 text-white border border-gray-600 rounded p-1 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  >
+                    <option value={6}>6</option>
+                    <option value={12}>12</option>
+                    <option value={24}>24</option>
+                    <option value={48}>48</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Task Modal */}
           <Modal
