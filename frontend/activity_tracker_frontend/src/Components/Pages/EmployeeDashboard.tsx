@@ -1,8 +1,9 @@
 // filepath: c:\Users\nigkumar\Desktop\Project\ActvityTracker\activity_tracker\frontend\activity_tracker_frontend\src\Components\Pages\EmployeeDashboard.tsx
 import { useState, useEffect } from "react";
 import Modal from "react-modal";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import apiClient from "../../utils/api";
+import { logout } from "../../utils/auth";
 
 // Define TypeScript interface for Task
 interface Task {
@@ -14,8 +15,6 @@ interface Task {
   status: "To-Do" | "In Progress" | "Completed";
   date?: string;
 }
-
-const API_URL = "http://localhost:5000/api/v1/tasks";
 
 const EmployeeDashboard: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -46,11 +45,10 @@ const EmployeeDashboard: React.FC = () => {
   useEffect(() => {
     fetchTasks();
   }, []);
-
   const fetchTasks = async () => {
     try {
-      const response = await axios.get<Task[]>(
-        `${API_URL}?assignedTo=${loggedInUserId}`
+      const response = await apiClient.get<Task[]>(
+        `/tasks?assignedTo=${loggedInUserId}`
       );
       setTasks(response.data);
     } catch (error) {
@@ -98,7 +96,6 @@ const EmployeeDashboard: React.FC = () => {
   ) => {
     setTaskData({ ...taskData, [e.target.name]: e.target.value });
   };
-
   // Add or update task
   const handleSubmit = async () => {
     try {
@@ -114,10 +111,10 @@ const EmployeeDashboard: React.FC = () => {
 
       if (editMode && editTaskId) {
         // Update existing task
-        await axios.put(`${API_URL}/${editTaskId}`, dataToSubmit);
+        await apiClient.put(`/tasks/${editTaskId}`, dataToSubmit);
       } else {
         // Create new task
-        await axios.post(API_URL, dataToSubmit);
+        await apiClient.post('/tasks', dataToSubmit);
       }
 
       fetchTasks();
@@ -136,11 +133,10 @@ const EmployeeDashboard: React.FC = () => {
       console.error("Error saving task:", error);
     }
   };
-
   // Delete task
   const deleteTask = async (id: string) => {
     try {
-      await axios.delete(`${API_URL}/${id}`);
+      await apiClient.delete(`/tasks/${id}`);
       setTasks(tasks.filter((task) => task._id !== id)); // Immediately update UI
     } catch (error) {
       console.error("Error deleting task:", error);
@@ -190,13 +186,8 @@ const EmployeeDashboard: React.FC = () => {
       <nav className="bg-gradient-to-r from-teal-500 to-cyan-600 text-white px-6 py-4 flex justify-between items-center shadow-lg">
         <h2 className="text-3xl font-bold tracking-wide">Activity Tracker</h2>
         <div className="flex items-center gap-4">
-          <span className="text-white mr-2">Employee Dashboard</span>
-          <button
-            onClick={() => {
-              localStorage.removeItem("token");
-              localStorage.removeItem("userId");
-              navigate("/");
-            }}
+          <span className="text-white mr-2">Employee Dashboard</span>          <button
+            onClick={logout}
             className="bg-gradient-to-r from-gray-700 to-gray-800 text-white px-4 py-2 rounded-lg shadow-md hover:from-gray-600 hover:to-gray-700 transition font-medium"
           >
             Logout

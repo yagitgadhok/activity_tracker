@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
+import apiClient from '../../utils/api';
+import { logout } from '../../utils/auth';
 
 interface Task {
   _id: string;
@@ -24,11 +25,10 @@ const TaskDetail: React.FC = () => {
   const [comment, setComment] = useState('');
   
   const navigate = useNavigate();
-
   useEffect(() => {
     const fetchTaskDetails = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/v1/tasks/${taskId}`);
+        const response = await apiClient.get(`/tasks/${taskId}`);
         setTask(response.data);
         setLoading(false);
       } catch (err) {
@@ -94,13 +94,8 @@ const TaskDetail: React.FC = () => {
             className="bg-blue-900 hover:bg-blue-800 text-white px-4 py-2 rounded-lg transition"
           >
             Back to Dashboard
-          </button>
-          <button
-            onClick={() => {
-              localStorage.removeItem("token");
-              localStorage.removeItem("userId");
-              navigate("/");
-            }}
+          </button>          <button
+            onClick={logout}
             className="bg-gradient-to-r from-gray-700 to-gray-800 text-white px-4 py-2 rounded-lg shadow-md hover:from-gray-600 hover:to-gray-700 transition font-medium"
           >
             Logout
