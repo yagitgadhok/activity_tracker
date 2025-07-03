@@ -1,7 +1,3 @@
-import React from 'react'
-
 export const SuperAdminUser = () => {
-  return (
-    <div>BothAdminUser</div>
-  )
-}
+  return <div>BothAdminUser</div>;
+};
