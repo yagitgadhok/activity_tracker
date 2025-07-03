@@ -4,8 +4,8 @@ import { useNavigate } from "react-router-dom";
 const Admin = () => {
   const navigate = useNavigate();
 
-  const [tasks, setTasks] = useState([]);
-  const [filterType, setFilterType] = useState("date"); // "date" or "name"
+  const [tasks, setTasks] = useState<{ _id: string; assignedTo?: { name?: string }; title: string; priority: string; status: string; date?: string }[]>([]);
+  const [filterType, setFilterType] = useState("date");
   const [filterValue, setFilterValue] = useState("");
 
   const formatDate = (dateString: string) => {

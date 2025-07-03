@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import apiClient from "../../utils/api";
 import { logout } from "../../utils/auth";
 import axios from "axios";
 
@@ -71,7 +70,12 @@ const ManagerDashboard: React.FC = () => {
 
   const fetchTasks = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/v1/tasks");
+      const token = localStorage.getItem("authToken"); // Retrieve token from local storage
+      const response = await axios.get("http://localhost:5000/api/v1/tasks", {
+        headers: {
+          Authorization: `Bearer ${token}`, // Add Authorization header
+        },
+      });
       setTasks(response.data);
       return response.data;
     } catch (error) {

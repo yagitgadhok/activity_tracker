@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import Modal from "react-modal";
 import { useNavigate } from "react-router-dom";
-import apiClient from "../../utils/api";
 import { logout } from "../../utils/auth";
 
 import axios from "axios";
@@ -58,7 +57,6 @@ const EmployeeDashboard: React.FC = () => {
   const [itemsPerPage, setItemsPerPage] = useState<number>(6);
 
   const loggedInUserId = localStorage.getItem("userId");
-  const navigate = useNavigate();
 
   // Fetch tasks from backend
   useEffect(() => {
