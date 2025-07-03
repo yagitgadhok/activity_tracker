@@ -1,7 +1,6 @@
 // filepath: c:\Users\nigkumar\Desktop\Project\ActvityTracker\activity_tracker\frontend\activity_tracker_frontend\src\Components\Pages\EmployeeDashboard.tsx
 import { useState, useEffect } from "react";
 import Modal from "react-modal";
-import { useNavigate } from "react-router-dom";
 import { logout } from "../../utils/auth";
 
 import axios from "axios";
